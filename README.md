@@ -29,3 +29,11 @@ Um eine Verbindung zwischen RStudio und GitHub herstellen zu können, müssen fo
 8. Gehe auf "Create Project". Nun solltest du einen lokale Klone / Kopie des Repositorys haben.
 9. Führe ein Pull-Request aus um das lokale Repository auf den aktuellsten Stand zu bringen, sofern nicht schon erfolgt.
 
+## Daten
+Die Daten sind als .csv-Datei "Datenbasis_V4.csv" gespeichert und in "Datenbasis_V4_Beschreibung_und_Taxonmiebaum.xlsx" ist eine Beschreibung der Tabelle und des Taxonomiebaums enthalten. 
+
+Die Tabelle enthält keine Fehlwerte oder sonstige Defects.
+
+## R-Skripte
+Im R-Skript "Main" im Ordner "R" können, ist der Code ...
+
