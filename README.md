@@ -37,3 +37,6 @@ Die Tabelle enthält keine Fehlwerte oder sonstige Defects.
 ## R-Skripte
 Im R-Skript "Main" im Ordner "R" können, ist der Code ...
 
+## Tutorial sdcMirco
+[Online-Tutorial](https://sdcpractice.readthedocs.io/en/latest/sdcMicro.html)
+
