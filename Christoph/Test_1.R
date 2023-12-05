@@ -76,5 +76,19 @@ sdc_LS@manipKeyVars
 index <- seq (1,50,1)
 ind_dat_adj <- na.omit(index[sdc_LS@manipKeyVars != "NA"])
 dat_adj<-dat[ind_dat_adj,]
+dim(dat)
+dim(dat_adj)
 
-
+#Nun mit mehr Daten
+names(dat)
+kv1<-names(dat)[c(1,2,3,4,7,8,9,10,11,12,14,16,18,20,22,23,24,31)]
+sdc_1 <- createSdcObj(dat,keyVars = kv1)
+sdc_1
+sdc_LS1 <- localSuppression(sdc_1)
+index <- seq (1,50,1)
+ind_dat_adj1 <- na.omit(index[sdc_LS1@manipKeyVars != "NA"])
+ind_dat_adj1 <- na.omit(index[sdc_LS1@manipKeyVars != "<NA>"])
+length(ind_dat_adj1)
+dat_adj1<-dat[ind_dat_adj1,]
+dim(dat)
+dim(dat_adj1)
