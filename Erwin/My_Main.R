@@ -12,3 +12,5 @@ library(sdcMicro)
 # install.package("readr") # Fuer das Einlesen der Daten
 
 source(file = file.path("R", "Daten_einlesen.R"))
+
+# Kommentar
