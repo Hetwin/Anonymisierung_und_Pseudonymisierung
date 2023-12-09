@@ -1,0 +1,68 @@
+---
+title: "Use Case Gesundheitsdaten"
+author: "AG Anonymisierung"
+format: html
+editor: visual
+toc: true
+toc-depth: 2
+toc-title: Contents
+---
+
+# Use Case
+
+Beschreibung des Use Cases.
+
+## Schritt 1: Notwendigkeit für Anonymisierung
+
+## Schritt 2: Datenaufbereitung und -analyse
+
+Kurze Zusammenfassung der Datenbasis
+
+```{r}
+#| echo: false
+# Laden der benötigten Pakete
+library(readr)
+library(sdcMicro)  # sdcMicro Paket mit den für die Anonymisierung benötigten Funktionen
+```
+
+
+
+Daten einlesen:
+
+```{r}
+#| echo: true
+#data <- read.csv("https://github.com/Hetwin/Anonymisierung_und_Pseudonymisierung/blob/main/Daten/Datenbasis_V4.csv", header = T)
+#data <- read_csv("https://github.com/Hetwin/Anonymisierung_und_Pseudonymisierung/blob/main/Daten/Datenbasis_V4.csv")
+#source(file = file.path("R", "Daten_einlesen.R"))
+```
+
+### Aufbau des Datensatzes
+
+Variablennamen
+
+```{r}
+#| echo: false
+#summary(data)
+```
+
+Der Datensatz besteht ...
+
+## Schritt 3: Art der Veröffentlichung
+
+## Schritt 4: Angriffsszenarien und Wahl der Key Variablen
+
+## Schritt 5: Verwendung der Daten und Auswahl der Maße für die Nutzenmessung
+
+## Schritt 6: Bewertung des Offenlegungsrisiko vor Anonymisierung
+
+## Schritt 7: Bewertung der Maße für die Nutzenmessung vor Anonymisierung
+
+## Schritt 8: Auswahl und Anwendung der SDC-Methoden
+
+## Schritt 9: Bewertung des Offenlegungsrisiko nach Anonymisierung
+
+## Schritt 10: Bewertung der Maße für die Nutzenmessung nach Anonymisierung
+
+## Schritt 11: Prüfung und Berichterstattung
+
+## Schritt 12: Veröffentlichung der Daten
