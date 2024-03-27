@@ -1,0 +1,233 @@
+---
+title: "sdcMicro - Tests"
+author: "Falkenau, Christoph"
+format: html
+editor: visual
+---
+
+## sdcMicro - DAV AG 'Anonymisierung und Pseudonymisierung' UAG3
+
+Dieses Dokument fasst erste Versuche im Paket scdMicro im Rahmen der Anwendung von Verfahren der Anonymisuerung und Pseudonymisierung für Daten zusammen.
+
+## Running Code
+
+Zunächst stellen wir die R Umgebung auf und laden die Daten.
+
+```{r}
+library(sdcMicro)
+library(readxl)
+library(tidyverse)
+set.seed(17)
+
+setwd("F:/DAV")
+data <- read.csv2("Datenbasis_V4.csv",sep=",")
+
+```
+
+Wir erzeugen direkt einen Teildatensatz mit weniger Atrributen.
+
+```{r}
+cols = c('Krankheit_KZ','Geschlecht','Ethnizitaet')
+dat_x <- data
+dat_x[,cols] <- lapply(dat_x[,cols],factor)
+KeyVars_x <- c('Krankheit_KZ','Geschlecht','Ethnizitaet')
+SensVars_x <- c('Gehalt_in_EUR')
+
+sub_Vars <- c(KeyVars_x,SensVars_x)
+subData <- dat_x[,sub_Vars]
+
+```
+
+Eine kurze Datenzusammenfassung
+
+```{r}
+names(subData)
+```
+
+Wir wählen nur die Attribute \| Attribut \| Beschreibung \| \|-------------\|:-----------------------------------------------\| \|Krankheit_KZ \|Kennzeichen fÃ¼r die vorliegende Krankheit \| \| Geschlecht \| Geschlecht \| \|Ethnizutaet \| Ethische Herkunft der Person \| \|Gehalt in Euro \| Monatliches (netto) Gehalt in EURO \|
+
+Zu deisen Daten gibt es folgende statistische Zusammenfassung.
+
+```{r}
+summary(subData)
+```
+
+Mit diesen Daten muss man für eine sdcMicro Anwendung nun ein scdMicro Objekt erstellen.
+
+```{r}
+sdc_sub <- createSdcObj(dat= subData, keyVars = KeyVars_x, sensibleVar = SensVars_x)
+```
+
+Eine Standardauswertung des Objektes sieht dann so aus:
+
+```{r}
+sdc_sub
+```
+
+Wir sehen hier bereits, dass durch das Entfernen von 10 Beobachtungen eine 2-Anonymität erreicht werden könnte. Um einen solchen Datensatz zu erzeugen, muss man die Klassen mit 1-AnonymitÃ¤t identifizieren. Diese liegen im scdMicro Objekt bereits vor.
+
+```{r}
+#| echo: true
+#Risikoauswertung
+ir <- sdc_sub@risk$individual
+ir_table <- cbind(subData, ir)
+print(ir_table)
+
+```
+
+An den Häufigkeiten der Klassen im Datensatz fk sieht man nun die Größen der Äquivalenzklassen. Über die Auswertung der K-KanonymitÃ¤t sieht man, dass 10 Werte unterhalb der 2-Anonymität vorliegen und 16 unterhalb der 3-Anonymität. Diese kann man auch über die Auswertung der fk selektieren.
+
+```{r}
+
+print(sdc_sub, type="kAnon")
+# Die Zeilen kÃ¶nnen Ã¼ber die fk Werte ermittelt werden
+sum(sdc_sub@risk$individual[,2] < 2)
+sum(sdc_sub@risk$individual[,2] < 3)
+```
+
+Um daraus nun einen k-Anonymen Datensatz zu erzeugen, kann man diesen nun direkt Ã¼ber die Indizees der oben gezählten Einträge bauen.
+
+```{r}
+index_sub <- seq(1,dim(dat_x)[1],1)
+leave_2<-na.omit(index_sub[sdc_sub@risk$individual[,2] > 1])
+subData_adj<-subData[leave_2,]
+dim(subData_adj)
+```
+
+Dies ist dann der 2-Anonyme Datensatz mit 40 Beobachtungen. Das kann man auch mit einem neuen scd-Objekt auf Basis des neuen Datensatzes prüfen.
+
+```{r}
+#| echo: false
+sdc_sub_adj <- createSdcObj(dat= subData_adj, keyVars = KeyVars_x, sensibleVar = SensVars_x)
+print(sdc_sub_adj, type="kAnon")
+```
+
+Man kann nun auch auf den beiden Datensätzen die L-Diversität prüfen.
+
+Zunächst für den ungekürzen Teildatensatz, also ohne 2-Anonymität erreicht zu haben.
+
+```{r}
+sdc_ldiv <- ldiversity(obj = sdc_sub, ldiv_index = c("Gehalt_in_EUR"), l_recurs_c = 2, missing = NA)
+sdc_ldiv@risk$ldiversity
+sdc_ldiv@risk$ldiversity[,'Gehalt_in_EUR_Distinct_Ldiversity']
+print(sdc_sub,"risk")
+```
+
+Und dann auch für den 2-Anonymen Datensatz.
+
+```{r}
+sdc_ldiv <- ldiversity(obj = sdc_sub_adj, ldiv_index = c("Gehalt_in_EUR"), l_recurs_c = 2, missing = NA)
+sdc_ldiv@risk$ldiversity
+sdc_ldiv@risk$ldiversity[,'Gehalt_in_EUR_Distinct_Ldiversity']
+print(sdc_sub_adj,"risk")
+```
+
+# Weitere Methoden zur Anonymisierung
+
+## Local Suppression
+
+Eine Variante einen anonymisierten Datensatz zu erzeugen ist Local Suppression. Dabei werden die Einträge eines Attributes unterdrückt, um ein Anonymität zu erreichen.
+
+Die Funktion wird dabei auf das sdc-Objekt angewendet. Es entsteht ein neues scd-Objekt mit unterdrückten Daten.
+
+```{r}
+sdc_LS1 <- localSuppression(sdc_sub, k=3)
+```
+
+Man hat einen Zugriff auf die Daten über
+
+```{r}
+sdc_LS1@manipKeyVars
+```
+
+Einen anonymisierten Datensatz erhält man nun entweder, indem man die Daten inklusive der NA verwendet oder die Daten um die gesamten Zeilen mit NA-Werten bereinigt.
+
+Zweiteres erreicht man durch
+
+```{r}
+index <- seq (1,50,1)
+ind_dat_adj1 <- which(is.na(sdc_LS1@manipKeyVars),arr.ind = TRUE)[,1]
+length(ind_dat_adj1)
+dat_adj1<-subData[-ind_dat_adj1, ]
+dim(subData)
+dim(dat_adj1)
+```
+
+Wendet man auf diese Daten nun die Auswertungen an, sieht man, dass die Kennzahlen für Anonymität steigen.
+
+```{r}
+sdc_LS1
+```
+
+Man sieht 16 unterdrückte Daten in der Ethnizität.
+
+In dem Datensatz und dem Objekt sdc_LS1 sind noch alle Datenzeilen enthalten. Die NA Werte werden als eigene Kategorie gezählt.
+
+Angewendet auf den reduzierten Datensatz kann man auch das folgende Objekt erzeigen
+
+```{r}
+sdc_sub_LS <- createSdcObj(dat= dat_adj1, keyVars = KeyVars_x, sensibleVar = SensVars_x)
+
+sdc_sub_LS
+```
+
+Die Anonymität ist zwar auch gewährleistet, die Infomationen in den nicht reduzierten Attributen ist aber verloren.
+
+## Global Recoding
+
+Beim Global Recoding werden Werte recodiert, um die Anonymität zu erreichen. Da wir keine gut codierbaren Daten im reduzierten Datensatz haben, ergänzen wir die Daten zunächst wieder um die ersten zwei Stellen der Postleitzahl.
+
+```{r}
+cols = c('Krankheit_KZ','Geschlecht','Ethnizitaet')
+dat_x2 <- data
+dat_x2[,cols] <- lapply(dat_x2[,cols],factor)
+KeyVars_x2 <- c('Krankheit_KZ','Geschlecht','Ethnizitaet','Postleitzahl_2st')
+SensVars_x2 <- c('Gehalt_in_EUR')
+
+sub_Vars2 <- c(KeyVars_x2,SensVars_x2)
+subData2 <- dat_x2[,sub_Vars2]
+```
+
+Dann erzeugen wir ein scd-Objekt
+
+```{r}
+sdc_sub2 <- createSdcObj(dat= subData2, keyVars = KeyVars_x2, sensibleVar = SensVars_x2)
+
+```
+
+und damit dann nun einen Datensatz, welcher die erten zwei Stellen Postleitzahl in Klassen recodiert.
+
+```{r}
+sdc_GR1 <- globalRecode(sdc_sub2,column=c("Postleitzahl_2st"),breaks = seq(1,121,30))
+sdc_GR1
+table(sdc_GR1@manipKeyVars$Postleitzahl_2st)
+```
+
+Dabei ist es insbesondere wichtig, dass die gewählten Klassen die gesamten Beobachtungen abdecken, das sonst das Global Recoding gesamte Datensätze entfernt, sofern sie nicht klassifizierbar sind.
+
+Während man für den Grunddatensatz mit zweistelligen Postleitzahlen die 2-Anonymität nur schwer erreichen konnte
+
+```{r}
+sdc_sub2
+```
+
+Ist es mit dem mittels Global Recoding angepassten Datensatz einfacher
+
+```{r}
+dat_x2$Postleitzahl_2st <- sdc_GR1@manipKeyVars$Postleitzahl_2st
+subData2$Postleitzahl_2st <- sdc_GR1@manipKeyVars$Postleitzahl_2st
+index_sub <- seq(1,dim(dat_x2)[1],1)
+leave_22<-na.omit(index_sub[sdc_GR1@risk$individual[,2] > 1])
+subData2_adj<-subData2[leave_22,]
+dim(subData2_adj)
+```
+
+Und folgenden Eigenschaften:
+
+```{r}
+sdc_sub2_adj<- createSdcObj(dat= subData2_adj, keyVars = KeyVars_x2, sensibleVar = SensVars_x2)
+
+sdc_sub2_adj
+```
+
+Dies liegt daran, dass die zweistellige Postleitzahl in demDatensatz aufgrund der geringen Beobachtungsmenge wie eine ID wirkt und erst durch die Gruppierung hinreichende Anonymität erlaubt.
